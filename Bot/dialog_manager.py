@@ -1,33 +1,44 @@
 import json
+import os
+
+DIALOGUES_FILE = 'dialogues.json'
+MAX_LENGTH = 4096
+
+
+def read_dialogues():
+    if os.path.exists(DIALOGUES_FILE):
+        try:
+            with open(DIALOGUES_FILE, 'r', encoding='utf-8') as file:
+                return json.load(file)
+        except json.JSONDecodeError:
+            return {}
+    return {}
+
+
+def write_dialogues(dialogues):
+    with open(DIALOGUES_FILE, 'w', encoding='utf-8') as file:
+        json.dump(dialogues, file, ensure_ascii=False, indent=4)
 
 
 def save_dialog(user_id, dialog_id, prompt, response):
-    try:
-        with open('dialogues.json', 'r') as file:
-            dialogues = json.load(file)
-    except FileNotFoundError:
-        dialogues = {}
+    dialogues = read_dialogues()
+    user_key = str(user_id)
 
-    if user_id not in dialogues:
-        dialogues[user_id] = {}
+    if user_key not in dialogues:
+        dialogues[user_key] = {}
 
-    if dialog_id not in dialogues[user_id]:
-        dialogues[user_id][dialog_id] = []
+    if dialog_id not in dialogues[user_key]:
+        dialogues[user_key][dialog_id] = []
 
-    dialogues[user_id][dialog_id].append({"prompt": prompt, "response": response})
+    dialogues[user_key][dialog_id].append({"prompt": prompt, "response": response})
 
-    max_length = 4096  # лимит для модели GPT-3.5 Turbo
-    while len(json.dumps(dialogues[user_id][dialog_id])) > max_length:
-        dialogues[user_id][dialog_id].pop(0)
+    while len(json.dumps(dialogues[user_key][dialog_id], ensure_ascii=False)) > MAX_LENGTH:
+        dialogues[user_key][dialog_id].pop(0)
 
-    with open('dialogues.json', 'w') as file:
-        json.dump(dialogues, file, indent=4)
+    write_dialogues(dialogues)
 
 
 def load_dialog_context(user_id, dialog_id):
-    try:
-        with open('dialogues.json', 'r') as file:
-            dialogues = json.load(file)
-        return dialogues.get(user_id, {}).get(dialog_id, [])
-    except FileNotFoundError:
-        return []
+    dialogues = read_dialogues()
+    user_key = str(user_id)
+    return dialogues.get(user_key, {}).get(dialog_id, [])

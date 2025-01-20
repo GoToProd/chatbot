@@ -20,7 +20,6 @@ DEFAULT_COMMANDS = (
 storage = StateMemoryStorage()
 
 bot = telebot.TeleBot(BOT_TOKEN, state_storage=storage)
-openai.api_key = OPENAI_API_KEY
 
 log_dir = os.path.join(os.path.dirname(__file__), "ChatGPT_Logs")
 ch = logging.StreamHandler()
