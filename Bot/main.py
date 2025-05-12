@@ -18,7 +18,7 @@ def send_long_message(chat_id, text):
 def send_welcome(message: Message):
     bot.reply_to(
         message,
-        "Привет!\nЯ ChatGPT 4o-mini Telegram Bot 🤖\nЗадай мне любой вопрос и я постараюсь на него ответить",
+        "Привет!\nЯ ChatGPT-4o Telegram Bot 🤖\nЗадай мне любой вопрос и я постараюсь на него ответить",
     )
 
 
@@ -54,9 +54,11 @@ def handle_message(message: Message):
         messages.append({"role": "assistant", "content": msg['response']})
     messages.append({"role": "user", "content": prompt})
 
+    processing_msg = bot.send_message(user_id, "Запрос принят. Обрабатываю...")
+
     try:
         completion = openai.chat.completions.create(
-            model="chatgpt-4o-latest",
+            model="gpt-4.1",
             messages=messages,
             temperature=0.9,
         )
@@ -64,8 +66,12 @@ def handle_message(message: Message):
     except Exception as e:
         response = f"Ошибка при обращении к OpenAI: {e}"
 
-    save_dialog(user_id, dialog_id, prompt, response)
+    try:
+        bot.delete_message(chat_id=user_id, message_id=processing_msg.message_id)
+    except Exception:
+        pass
 
+    save_dialog(user_id, dialog_id, prompt, response)
     send_long_message(chat_id=user_id, text=response)
 
 

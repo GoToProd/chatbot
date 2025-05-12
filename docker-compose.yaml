@@ -1,0 +1,9 @@
+services:
+  chatgpt:
+    build: .
+    container_name: chatgpt
+    ports:
+      - "127.0.0.1:8001:8001"
+    env_file:
+      - Bot/.env
+    restart: unless-stopped
